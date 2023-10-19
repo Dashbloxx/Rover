@@ -22,3 +22,4 @@ typedef struct
 nn_t * create_neural_network(int num_layers, int * layer_sizes);
 void feedforward(nn_t * nn, double * input, double * output);
 void destroy_neural_network(nn_t * nn);
+void train_neural_network(nn_t * nn, double * input, double * target, double learning_rate);

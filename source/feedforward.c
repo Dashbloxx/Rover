@@ -65,3 +65,50 @@ void destroy_neural_network(nn_t * nn)
 	free(nn->layers);
 	free(nn);
 }
+
+void train_neural_network(nn_t * nn, double * input, double * target, double learning_rate)
+{
+	double * output = (double *)malloc(nn->layers[nn->num_layers - 1].num_neurons * sizeof(double));
+	feedforward(nn, input, output);
+
+	for(int i = nn->num_layers - 1; i >= 0; i--)
+	{
+		for(int j = 0; j < nn->layers[i].num_neurons; j++)
+		{
+			double error;
+			if(i == nn->num_layers - 1)
+			{
+				error = target[j] - output[j];
+			}
+			else
+			{
+				error = 0.0;
+				for(int k = 0; k < nn->layers[i + 1].num_neurons; k++)
+				{
+					error += nn->layers[i + 1].neurons[k].weights[j] * nn->layers[i + 1].neurons[k].bias;
+				}
+			}
+			
+			double delta = error * output[j] * (1.0 - output[j]);
+
+			/* Update bias. */
+			nn->layers[i].neurons[j].bias += learning_rate * delta;
+
+			/* Update weights */
+			for(int k = 0; k < nn->layers[i].num_inputs; k++)
+			{
+				nn->layers[i].neurons[j].weights[k] += learning_rate * delta * input[k];
+			}
+		}
+
+		input = output;
+		if(i > 0)
+		{
+			free(output);
+			output = (double *)malloc(nn->layers[i - 1].num_neurons * sizeof(double));
+			feedforward(nn, nn->layers[i - 1].neurons[0].weights, output);
+		}
+	}
+
+	free(output);
+}
