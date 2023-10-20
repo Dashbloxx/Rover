@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <math.h>
+#include <unistd.h>
 
 #include "feedforward.h"
 
@@ -11,7 +12,16 @@ int main()
 	int layer_sizes[] = {2, 2, 1};
 
 	/* Create a neural network object! */
-	nn_t * nn = create_neural_network(num_layers, layer_sizes);
+	nn_t * nn;
+
+	if(access("model.bin", F_OK) != -1)
+	{
+        nn = load_neural_network("model.bin");
+    }
+	else
+	{
+		nn = create_neural_network(num_layers, layer_sizes);
+	}
 
 	/* Obtain two inputs from stdin. */
 	double input[2];
@@ -37,6 +47,8 @@ int main()
 	/* Print the input & output values. */
 	printf("Input: %lf, %lf\n", input[0], input[1]);
 	printf("Output: %lf\n", output[0]);
+
+	save_neural_network(nn, "model.bin");
 
 	/* De-allocate the neural network object. */
 	destroy_neural_network(nn);

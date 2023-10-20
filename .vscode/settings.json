@@ -9,6 +9,7 @@
     "editor.renderWhitespace": "boundary",
 	"editor.renderControlCharacters": true,
 	"files.associations": {
-		"cmath": "cpp"
+		"cmath": "cpp",
+		"unistd.h": "c"
 	}
 }

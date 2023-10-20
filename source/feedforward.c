@@ -112,3 +112,65 @@ void train_neural_network(nn_t * nn, double * input, double * target, double lea
 
 	free(output);
 }
+
+void save_neural_network(nn_t * nn, const char * filename)
+{
+	FILE * file = fopen(filename, "wb");
+	if(file == NULL)
+	{
+		/* Failed to open the file for writing! */
+		return;
+	}
+
+	fwrite(&nn->num_layers, sizeof(int), 1, file);
+
+	for(int i = 0; i < nn->num_layers; i++)
+	{
+		fwrite(&nn->layers[i].num_inputs, sizeof(int), 1, file);
+		fwrite(&nn->layers[i].num_neurons, sizeof(int), 1, file);
+	}
+
+	for(int i = 0; i < nn->num_layers; i++)
+	{
+		for(int j = 0; j < nn->layers[i].num_neurons; j++)
+		{
+			fwrite(nn->layers[i].neurons[j].weights, sizeof(double), nn->layers[i].num_inputs, file);
+			fwrite(&nn->layers[i].neurons[j].bias, sizeof(double), 1, file);
+		}
+	}
+
+	fclose(file);
+}
+
+nn_t * load_neural_network(const char * filename)
+{
+	FILE * file = fopen(filename, "rb");
+	if(file == NULL)
+	{
+		/* Failed to open the file for reading! */
+		return NULL;
+	}
+
+	int num_layers;
+	fread(&num_layers, sizeof(int), 1, file);
+
+	int *layer_sizes = (int *)malloc(num_layers * sizeof(int));
+	fread(layer_sizes, sizeof(int), num_layers * 2, file);
+
+	nn_t * nn = create_neural_network(num_layers, layer_sizes);
+
+	for(int i = 0; i < nn->num_layers; i++)
+	{
+		for(int j = 0; j < nn->layers[i].num_neurons; j++)
+		{
+			fread(nn->layers[i].neurons[j].weights, sizeof(double), nn->layers[i].num_inputs, file);
+			fread(&nn->layers[i].neurons[j].bias, sizeof(double), 1, file);
+		}
+	}
+
+	fclose(file);
+
+	free(layer_sizes);
+
+	return nn;
+}
